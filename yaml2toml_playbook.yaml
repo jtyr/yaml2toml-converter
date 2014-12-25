@@ -1,0 +1,124 @@
+---
+
+- hosts: all
+  connection: local
+  gather_facts: no
+
+  vars:
+    # Example from:
+    # https://github.com/toml-lang/toml/blob/master/tests/example.yaml
+    test1: &test1
+      the:
+        hard:
+          another_test_string: ' Same thing, but with a string #'
+          bit#:
+            multi_line_array: [']']
+            what?: You don't think some user won't do that?
+          harder_test_string: ' And when "''s are in the string, along with # "'
+          test_array: ['] ', ' # ']
+          test_array2: ['Test #11 ]proved that', 'Experiment #9 was a success']
+        test_string: 'You''ll hate me after this - #'
+
+    # Example from:
+    # https://github.com/toml-lang/toml/blob/master/tests/hard_example.yaml
+    test2: &test2
+      title: TOML Example
+      owner:
+        name: Tom Preston-Werner
+        organization: GitHub
+        bio: "GitHub Cofounder & CEO\nLikes tater tots and beer."
+        dob: '1979-05-27T07:32:00Z'
+      database:
+        server: 192.168.1.1
+        ports: [ 8001, 8001, 8002 ]
+        connection_max: 5000
+        enabled: true
+      servers:
+        alpha:
+          ip: 10.0.0.1
+          dc: eqdc10
+        beta:
+          ip: 10.0.0.2
+          dc: eqdc10
+          country: "中国"
+      clients:
+        data: [ ["gamma", "delta"], [1, 2] ]
+        hosts: [ "alpha", "omega" ]
+      products:
+        - name: Hammer
+          sku: 738594937
+        - name: Nail
+          sku: 284758393
+          color: gray
+
+    # Example of InfluxDB configuration written in YAML:
+    # https://github.com/influxdb/influxdb/blob/master/etc/config.sample.toml
+    test3: &test3
+      bind-address: 0.0.0.0
+      reporting-disabled: 'true'
+      logging:
+        level: info
+        file: /opt/influxdb/shared/log.txt
+      admin:
+        port: 8083
+      api:
+        port: 8086
+        read-timeout: 5s
+      input_plugins:
+        graphite:
+          enabled: 'false'
+        collectd:
+          enabled: 'false'
+        udp:
+          enabled: 'false'
+        udp_servers:
+          - enabled: 'false'
+      raft:
+        port: 8090
+        dir: /opt/influxdb/shared/data/raft
+        debug: 'false'
+      storage:
+        dir: /opt/influxdb/shared/data/db
+        write-buffer-size: 10000
+        default-engine: rocksdb
+        max-open-shards: 0
+        point-batch-size: 100
+        write-batch-size: 5000000
+        retention-sweep-period: 10m
+        engines:
+          leveldb:
+            max-open-files: 1000
+            lru-cache-size: 200m
+          rocksdb:
+            max-open-files: 1000
+            lru-cache-size: 200m
+          hyperleveldb:
+            max-open-files: 1000
+            lru-cache-size: 200m
+          lmdb:
+            map-size: 100g
+      cluster:
+        protobuf_port: 8099
+        protobuf_timeout: 2s
+        protobuf_heartbeat: 200ms
+        protobuf_min_backoff: 1s
+        protobuf_max_backoff: 10s
+        write-buffer-size: 1000
+        max-response-buffer-size: 100
+        concurrent-shard-query-limit: 10
+      wal:
+        dir: /opt/influxdb/shared/data/wal
+        flush-after: 1000
+        bookmark-after: 1000
+        index-after: 1000
+        requests-per-logfile: 10000
+
+    # Dereference some of the tests
+    yaml_data: *test1
+
+  tasks:
+    # Run the conversion
+    - name: YAML2TOML test
+      template:
+        src: yaml2toml_example.j2
+        dest: ./output.toml

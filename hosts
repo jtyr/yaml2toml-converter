@@ -1,0 +1,2 @@
+# Ansible requires Python version 2
+localhost ansible_python_interpreter="/usr/bin/env python2"

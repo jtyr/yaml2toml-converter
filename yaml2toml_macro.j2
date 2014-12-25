@@ -1,0 +1,66 @@
+{#
+ # Jinja2 template which converts YAML to TOML
+ # (https://github.com/jtyr/yaml2toml-converter)
+ #}
+
+{%- macro yaml2toml(item, prevkey='', level=0, first=[]) %}
+  {%- if item is mapping %}
+    {#- The item is a dict #}
+
+    {#- First process all strings, numbers and lists #}
+    {%- for key, value in item.iteritems() | sort -%}
+      {%- if value is string or value is number or (value is not mapping and value[0] is not mapping) %}
+        {#- The value is a string, a number, or a list -#}
+        {{ '  ' * level }}{{ key }}{{ " = " }}{{ yaml2toml(value, prevkey=prevkey, level=level, first=first) }}
+        {%- if first.append(1) %}{% endif %}
+      {%- endif %}
+    {%- endfor %}
+
+    {#- Then process all data structures #}
+    {%- for key, value in item.iteritems() | sort %}
+      {%- if value is not string and value is not number and (value is mapping or value[0] is mapping) %}
+        {%- set old_prevkey = prevkey %}
+        {%- set old_level = level %}
+
+        {%- if value is mapping %}
+          {#- The value is a dict #}
+          {%- if prevkey != '' and prevkey != key %}
+            {%- set level = level + 1 %}
+          {%- endif %}
+
+          {%- set prevkey = (key if prevkey == '' else prevkey+'.'+key) -%}
+
+          {{ '' if first | length == 0 else '\n' }}{{ '  ' * level }}[{{ prevkey }}]{{ "\n" }}
+        {%- elif value[0] is mapping %}
+          {#- The value is a table #}
+          {%- set prevkey = (key if prevkey == '' else prevkey+'.'+key) %}
+          {%- set level = level +1 %}
+        {%- endif -%}
+
+        {{ yaml2toml(value, prevkey=prevkey, level=level, first=first) }}
+
+        {%- set prevkey = old_prevkey %}
+        {%- set level = old_level %}
+        {%- if first.append(1) %}{% endif %}
+      {%- endif %}
+    {%- endfor %}
+
+  {%- elif item is number or item == 'true' or item == 'True' or item == 'false' or item == 'False' %}
+    {#- The item is a number -#}
+    {{ item }}{{ "\n" }}
+
+  {%- elif item is string %}
+    {#- The item is a string -#}
+    "{{ item | replace("\n", "\\n") | replace("\t", "\\t") }}"{{ "\n" }}
+
+  {%- else %}
+    {#- The item is a list #}
+    {%- if item[0] is mapping %}
+      {%- for d in item -%}
+        {{ "\n" }}{{ '  ' * level }}[[{{ prevkey }}]]{{ "\n" }}{{ yaml2toml(d, level=level, first=first) }}
+      {%- endfor %}
+    {%- else -%}
+      {{ item }}{{ "\n" }}
+    {%- endif %}
+  {%- endif %}
+{%- endmacro -%}
