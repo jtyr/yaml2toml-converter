@@ -45,6 +45,14 @@ $ ansible-playbook --diff -i hosts ./yaml2toml_playbook.yaml
 The output of the Ansible playbook conversion is then in the file `output.toml`.
 
 
+Limitation
+----------
+
+Jinja2 doesn't provide any filters for `datetime` so this converter fails if you
+use `datetime` types in the YAML data. The workaround is to quote the `datetime`
+values.
+
+
 Files
 -----
 
