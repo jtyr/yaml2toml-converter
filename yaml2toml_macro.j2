@@ -3,7 +3,7 @@
  # (https://github.com/jtyr/yaml2toml-converter)
  #}
 
-{%- macro yaml2toml(item, prevkey='', level=0, first=[]) %}
+{%- macro yaml2toml(item, prevkey='', level=0, first=[], detect_nums=false) %}
   {%- if item is mapping %}
     {#- The item is a dict #}
 
@@ -11,7 +11,7 @@
     {%- for key, value in item.iteritems() | sort -%}
       {%- if value is string or value is number or (value is not mapping and value[0] is not mapping) %}
         {#- The value is a string, a number, or a list -#}
-        {{ '  ' * level }}{{ key }}{{ " = " }}{{ yaml2toml(value, prevkey=prevkey, level=level, first=first) }}
+        {{ '  ' * level }}{{ key }}{{ " = " }}{{ yaml2toml(value, prevkey=prevkey, level=level, first=first, detect_nums=detect_nums) }}
         {%- if first.append(1) %}{% endif %}
       {%- endif %}
     {%- endfor %}
@@ -37,7 +37,7 @@
           {%- set level = level +1 %}
         {%- endif -%}
 
-        {{ yaml2toml(value, prevkey=prevkey, level=level, first=first) }}
+        {{ yaml2toml(value, prevkey=prevkey, level=level, first=first, detect_nums=detect_nums) }}
 
         {%- set prevkey = old_prevkey %}
         {%- set level = old_level %}
@@ -45,7 +45,7 @@
       {%- endif %}
     {%- endfor %}
 
-  {%- elif item is number or item == 'true' or item == 'True' or item == 'false' or item == 'False' %}
+  {%- elif item is number or (detect_nums and (item | int | string == item or item | float | string == item)) or item == 'true' or item == 'True' or item == 'false' or item == 'False' %}
     {#- The item is a number -#}
     {{ item }}{{ "\n" }}
 
@@ -57,7 +57,7 @@
     {#- The item is a list #}
     {%- if item[0] is mapping %}
       {%- for d in item -%}
-        {{ "\n" }}{{ '  ' * level }}[[{{ prevkey }}]]{{ "\n" }}{{ yaml2toml(d, level=level, first=first) }}
+        {{ "\n" }}{{ '  ' * level }}[[{{ prevkey }}]]{{ "\n" }}{{ yaml2toml(d, level=level, first=first, detect_nums=detect_nums) }}
       {%- endfor %}
     {%- else -%}
       {{ item }}{{ "\n" }}
