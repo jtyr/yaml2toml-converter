@@ -9,7 +9,7 @@
 
     {#- First process all strings, numbers and lists #}
     {%- for key, value in item.iteritems() | sort -%}
-      {%- if value is string or value is number or (value is not mapping and value[0] is not mapping) %}
+      {%- if value is string or value is number or (value is not mapping and value | length > 0 and value[0] is not mapping) %}
         {#- The value is a string, a number, or a list -#}
         {{ '  ' * level }}{{ key }}{{ " = " }}{{ yaml2toml(value, prevkey=prevkey, level=level, first=first, detect_nums=detect_nums) }}
         {%- if first.append(1) %}{% endif %}
