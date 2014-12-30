@@ -9,16 +9,32 @@
 
     {#- First process all strings, numbers and lists #}
     {%- for key, value in item.iteritems() | sort -%}
-      {%- if value is string or value is number or (value is not mapping and value | length > 0 and value[0] is not mapping) %}
+      {%- if value is string or
+          value is number or
+          (
+            value is not mapping and
+            value | length > 0 and
+            value[0] is not mapping) %}
+
         {#- The value is a string, a number, or a list -#}
-        {{ '  ' * level }}{{ key }}{{ " = " }}{{ yaml2toml(value, prevkey=prevkey, level=level, first=first, detect_nums=detect_nums) }}
+        {{ '  ' * level }}{{ key }}{{ " = " }}{{ yaml2toml(
+          value,
+          prevkey=prevkey,
+          level=level,
+          first=first,
+          detect_nums=detect_nums) }}
         {%- if first.append(1) %}{% endif %}
       {%- endif %}
     {%- endfor %}
 
     {#- Then process all data structures #}
     {%- for key, value in item.iteritems() | sort %}
-      {%- if value is not string and value is not number and (value is mapping or value[0] is mapping) %}
+      {%- if value is not string and
+          value is not number and
+          (
+            value is mapping or
+            value[0] is mapping) %}
+
         {%- set old_prevkey = prevkey %}
         {%- set old_level = level %}
 
@@ -28,16 +44,25 @@
             {%- set level = level + 1 %}
           {%- endif %}
 
-          {%- set prevkey = (key if prevkey == '' else prevkey+'.'+key) -%}
+          {%- set prevkey = (key if prevkey == '' else prevkey + '.' + key) %}
 
-          {{ '' if first | length == 0 else '\n' }}{{ '  ' * level }}[{{ prevkey }}]{{ "\n" }}
+          {%- if first | length > 0 -%}
+            {{ '\n' }}
+          {%- endif -%}
+
+          {{ '  ' * level }}[{{ prevkey }}]{{ "\n" }}
         {%- elif value[0] is mapping %}
           {#- The value is a table #}
-          {%- set prevkey = (key if prevkey == '' else prevkey+'.'+key) %}
+          {%- set prevkey = (key if prevkey == '' else prevkey + '.' + key) %}
           {%- set level = level +1 %}
         {%- endif -%}
 
-        {{ yaml2toml(value, prevkey=prevkey, level=level, first=first, detect_nums=detect_nums) }}
+        {{ yaml2toml(
+             value,
+             prevkey=prevkey,
+             level=level,
+             first=first,
+             detect_nums=detect_nums) }}
 
         {%- set prevkey = old_prevkey %}
         {%- set level = old_level %}
@@ -45,7 +70,16 @@
       {%- endif %}
     {%- endfor %}
 
-  {%- elif item is number or (detect_nums and (item | int | string == item or item | float | string == item)) or item == 'true' or item == 'True' or item == 'false' or item == 'False' %}
+  {%- elif item is number or
+      (detect_nums and
+      (
+        item | int | string == item or
+        item | float | string == item)) or
+      item == 'true' or
+      item == 'True' or
+      item == 'false' or
+      item == 'False' %}
+
     {#- The item is a number -#}
     {{ item }}{{ "\n" }}
 
@@ -57,7 +91,11 @@
     {#- The item is a list #}
     {%- if item[0] is mapping %}
       {%- for d in item -%}
-        {{ "\n" }}{{ '  ' * level }}[[{{ prevkey }}]]{{ "\n" }}{{ yaml2toml(d, level=level, first=first, detect_nums=detect_nums) }}
+        {{ "\n" }}{{ '  ' * level }}[[{{ prevkey }}]]{{ "\n" }}{{ yaml2toml(
+          d,
+          level=level,
+          first=first,
+          detect_nums=detect_nums) }}
       {%- endfor %}
     {%- else -%}
       {{ item }}{{ "\n" }}
