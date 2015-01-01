@@ -80,7 +80,7 @@
       item == 'false' or
       item == 'False' %}
 
-    {#- The item is a number -#}
+    {#- The item is a number or boolean -#}
     {{ item }}{{ "\n" }}
 
   {%- elif item is string %}
