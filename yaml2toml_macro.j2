@@ -8,7 +8,7 @@
     {#- The item is a dict #}
 
     {#- First process all strings, numbers and lists #}
-    {%- for key, value in item.iteritems() | sort -%}
+    {%- for key, value in item.items() | sort -%}
       {%- if value is string or
           value is number or
           (
@@ -28,7 +28,7 @@
     {%- endfor %}
 
     {#- Then process all data structures #}
-    {%- for key, value in item.iteritems() | sort %}
+    {%- for key, value in item.items() | sort %}
       {%- if value is not string and
           value is not number and
           (
