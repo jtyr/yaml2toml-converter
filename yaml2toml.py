@@ -1,7 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from jinja2 import Template
-from yaml import load
+from yaml import safe_load
 import argparse
 import sys
 
@@ -37,7 +37,7 @@ def main():
     args.template_fh.close()
 
     # Read the YAML file
-    yaml_data = load(args.yaml_fh)
+    yaml_data = safe_load(args.yaml_fh)
     args.yaml_fh.close()
 
     # Create jinja template object
@@ -46,7 +46,7 @@ def main():
     toml_output = t.module.yaml2toml(yaml_data).encode('utf8')
 
     # Print the result
-    sys.stdout.write(toml_output)
+    sys.stdout.buffer.write(toml_output)
 
 
 if __name__ == '__main__':
